@@ -1,7 +1,7 @@
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @note Pour faire une requête sur la table de hashage distribuée,
@@ -27,21 +27,7 @@ public interface NoeudInterface extends Remote {
 	 * 
 	 * domaine(idChord) == domaine(cle)
 	 */
-	
-	/**
-	 * Cette méthode, utilisée par un noeud-client A, est exécutée par un premier
-	 * noeud-serveur B que A connait. B vérifie si l'idChord de A appartient à son
-	 * propre intervalle de clés (intervalle de clés == intervalle d'idChord). 
-	 * - si idChord(A) est dans son intervalle, B renvoit son propre numéro idRMI.	 
-	 * - sinon, B demande à suiv(B) en appelant cette même méthode
-	 * @param idChordAppelant idChord du nouveau noeud à placer
-	 * @param idRMIDuNoeudDEntree Le premier idRMI qui sert de "point d'entrée"
-	 * @return l'idRMI du noeud-serveur qui correspond au prédécesseur de idChordAppelant,
-	 * ou null si idChordAppelant est déjà utilisé
-	 * @throws RemoteException
-	 */
-	String nouvNoeud_ChercherPredecesseur(int idChordAppelant, String idRMIDuNoeudDEntree) throws RemoteException;
-	
+
 	/**
 	 * 
 	 * @return
@@ -81,32 +67,25 @@ public interface NoeudInterface extends Remote {
 	 */
 	
 	/**
-	 * Récupère l'idChord/cléMin du noeud-serveur.
-	 * @note C'est la première étape pour que le noeud-client A puisse s'insérer dans 
-	 * l'anneau est de récupérer quel est le numéro de clé/idChord drrière le 
-	 * noeud-serveur B dont il a reçu l'idRMI en lançant ajouterNoeud().
-	 * @note idChord = cleMin
-	 * @return
+	 * Cette méthode, utilisée par un noeud-client A, est exécutée par un premier
+	 * noeud-serveur B que A connait. B vérifie si l'idChord de A appartient à son
+	 * propre intervalle de clés (intervalle de clés == intervalle d'idChord). 
+	 * - si idChord(A) est dans son intervalle, B renvoit son propre numéro idRMI.	 
+	 * - sinon, B demande à suiv(B) en appelant cette même méthode
+	 * @param idChordAppelant idChord du nouveau noeud à placer
+	 * @return le noeud-serveur qui correspond au prédécesseur de idChordAppelant,
+	 * ou null si idChordAppelant est déjà utilisé
 	 * @throws RemoteException
 	 */
-	int nouvNoeud_RecupererIdChord() throws RemoteException;
-	
-	/**
-	 * Retourne l'idRMI du suivant du noeud-serveur.
-	 * @note Le noeud-client A a besoin d'appeler cette méthode à partir
-	 * du noeud-serveur B lorsque A veut remplir son champ "prédécesseur".
-	 * @return
-	 * @throws RemoteException
-	 */
-	String nouvNoeud_RecupererIdRMISuivant() throws RemoteException;
-	
+	Noeud nouvNoeud_ChercherPredecesseur(int idChordAppelant) throws RemoteException;
+		
 	/**
 	 * Récupère les données de l'intervalle [cleDebut, this.cleMax].
 	 * @param cleDebut
 	 * @return
 	 * @throws RemoteException
 	 */
-	List<Integer> nouvNoeud_RecupererDonneesQuiSuivent(int cleDebut) throws RemoteException;
+	ArrayList<Integer> nouvNoeud_RecupererDonneesQuiSuivent(int cleDebut) throws RemoteException;
 	/**
 	 * Le noeud-serveur B qui reçoit cette requête depuis le noeud-client A va
 	 * valider l'insertion de A dans l'anneau en modifiant son propre intervalle
@@ -114,6 +93,16 @@ public interface NoeudInterface extends Remote {
 	 * trop qu'il a déjà donné à A.
 	 * @throws RemoteException
 	 */
-	void nouvNoeud_validerAjoutNoeud(int idChordAjoute, String idRMIAjoute) throws RemoteException;
+	void nouvNoeud_validerAjoutNoeud(Noeud leNoeudAjoute) throws RemoteException;
+	
+	void nouvNoeud_ModifierNoeudSuivant();
+	
+	int getIdChord() throws RemoteException;
+	int getCleDebut() throws RemoteException;
+	int getCleFin() throws RemoteException;
+	void setNoeudSuivant(Noeud noeudSuivant) throws RemoteException;
+	void setNoeudPrecedent(Noeud noeudPrecedent) throws RemoteException;
+	Noeud getNoeudSuivant() throws RemoteException;
+	Noeud getNoeudPrecedent() throws RemoteException;
 	
 }
