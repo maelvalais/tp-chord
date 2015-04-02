@@ -36,7 +36,8 @@ public interface NoeudInterface extends Remote {
 	 * - sinon, B demande à suiv(B) en appelant cette même méthode
 	 * @param idChordAppelant idChord du nouveau noeud à placer
 	 * @param idRMIDuNoeudDEntree Le premier idRMI qui sert de "point d'entrée"
-	 * @return l'idRMI du noeud-serveur qui correspond au prédécesseur de idChordAppelant
+	 * @return l'idRMI du noeud-serveur qui correspond au prédécesseur de idChordAppelant,
+	 * ou null si idChordAppelant est déjà utilisé
 	 * @throws RemoteException
 	 */
 	String nouvNoeud_ChercherPredecesseur(int idChordAppelant, String idRMIDuNoeudDEntree) throws RemoteException;
