@@ -1,7 +1,7 @@
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @note Pour faire une requête sur la table de hashage distribuée,
@@ -48,17 +48,17 @@ public interface NoeudInterface extends Remote {
 	 * @return -1 si erreur, un idChord sinon
 	 * @throws RemoteException
 	 */
-	int get(int cle) throws RemoteException;
+	Integer get(int cle) throws RemoteException;
 	
 	/**
 	 * On veut modifier la "donnée" à partir de son "hash" (identifiant)
 	 * dans la table de hashage distribuée CHORD.
 	 * @param cle
 	 * @param donnee
-	 * @return
+	 * @return null si la clé n'existait pas déjà, un Integer sinon
 	 * @throws RemoteException
 	 */
-	boolean update(int cle, int donnee) throws RemoteException;
+	Integer put(int cle, int donnee) throws RemoteException;
 
 	/*
 	 * Toutes les fonctions suivantes sont à utiliser dans le contexte "pair à pair"
@@ -72,20 +72,21 @@ public interface NoeudInterface extends Remote {
 	 * propre intervalle de clés (intervalle de clés == intervalle d'idChord). 
 	 * - si idChord(A) est dans son intervalle, B renvoit son propre numéro idRMI.	 
 	 * - sinon, B demande à suiv(B) en appelant cette même méthode
-	 * @param idChordAppelant idChord du nouveau noeud à placer
+	 * @param cle idChord du nouveau noeud à placer
 	 * @return le noeud-serveur qui correspond au prédécesseur de idChordAppelant,
 	 * ou null si idChordAppelant est déjà utilisé
 	 * @throws RemoteException
 	 */
-	Noeud nouvNoeud_ChercherPredecesseur(int idChordAppelant) throws RemoteException;
+	NoeudInterface chercherPredecesseur(int cle) throws RemoteException;
 		
 	/**
 	 * Récupère les données de l'intervalle [cleDebut, this.cleMax].
 	 * @param cleDebut
+	 * @param cleFin
 	 * @return
 	 * @throws RemoteException
 	 */
-	ArrayList<Integer> nouvNoeud_RecupererDonneesQuiSuivent(int cleDebut) throws RemoteException;
+	HashMap<Integer,Integer> recupererDonneesIntervalle(int cleDebut, int cleFin) throws RemoteException;
 	/**
 	 * Le noeud-serveur B qui reçoit cette requête depuis le noeud-client A va
 	 * valider l'insertion de A dans l'anneau en modifiant son propre intervalle
@@ -93,16 +94,14 @@ public interface NoeudInterface extends Remote {
 	 * trop qu'il a déjà donné à A.
 	 * @throws RemoteException
 	 */
-	void nouvNoeud_validerAjoutNoeud(Noeud leNoeudAjoute) throws RemoteException;
-	
-	void nouvNoeud_ModifierNoeudSuivant();
+	void validerAjoutNoeud(NoeudInterface leNoeudAjoute) throws RemoteException;
 	
 	int getIdChord() throws RemoteException;
 	int getCleDebut() throws RemoteException;
 	int getCleFin() throws RemoteException;
-	void setNoeudSuivant(Noeud noeudSuivant) throws RemoteException;
-	void setNoeudPrecedent(Noeud noeudPrecedent) throws RemoteException;
-	Noeud getNoeudSuivant() throws RemoteException;
-	Noeud getNoeudPrecedent() throws RemoteException;
+	void setNoeudSuivant(NoeudInterface noeudSuivant) throws RemoteException;
+	void setNoeudPrecedent(NoeudInterface noeudPrecedent) throws RemoteException;
+	NoeudInterface getNoeudSuivant() throws RemoteException;
+	NoeudInterface getNoeudPrecedent() throws RemoteException;
 	
 }
