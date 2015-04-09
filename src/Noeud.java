@@ -213,7 +213,8 @@ public class Noeud implements NoeudInterface {
 		
 		Noeud noeud = new Noeud(idChordDuNoeud,idRMIDuNoeud);
 		try {
-			NoeudInterface stub = (NoeudInterface) UnicastRemoteObject.exportObject(noeud, noeud.cleDebut+400); // XXX Il faudrait fixer ça !
+			int port = (int)(Math.random()*10000)%(2<<16 - 4000) + 4000;
+			NoeudInterface stub = (NoeudInterface) UnicastRemoteObject.exportObject(noeud, port); // XXX Il faudrait fixer ça !
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(idRMIDuNoeud, stub);
 			noeud.moi = stub;
