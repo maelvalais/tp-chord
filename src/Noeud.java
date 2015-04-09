@@ -6,6 +6,14 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 
 
+/**
+ * @note 9/04/2015 
+ * Pour régler l'exception java.lang.ClassNotFoundException: NoeudInterface :
+ * vérifier qu'on lance bien `rmiregistry &` depuis le dossier bin
+ * 
+ * @author maelv
+ *
+ */
 public class Noeud implements NoeudInterface {
 	private int cleDebut; // L'idChord (= cleDebut) du noeud-serveur
 	private int cleFin; // RAPPEL: cleMin = idChord
@@ -205,7 +213,7 @@ public class Noeud implements NoeudInterface {
 		
 		Noeud noeud = new Noeud(idChordDuNoeud,idRMIDuNoeud);
 		try {
-			NoeudInterface stub = (NoeudInterface) UnicastRemoteObject.exportObject(noeud, noeud.cleDebut+4000);
+			NoeudInterface stub = (NoeudInterface) UnicastRemoteObject.exportObject(noeud, noeud.cleDebut+400); // XXX Il faudrait fixer ça !
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(idRMIDuNoeud, stub);
 			noeud.moi = stub;
