@@ -108,7 +108,7 @@ public class Noeud implements NoeudInterface {
 			donnees.remove(cle);
 		}
 		
-		this.cleFin = (noeud.getCleDebut()-1)%CLE_MAX;
+		this.cleFin = ((noeud.getCleDebut()-1)%CLE_MAX + CLE_MAX) % CLE_MAX;;
 		
 		suivant.setNoeudPrecedent(noeud);
 		this.setNoeudSuivant(noeud);
@@ -181,7 +181,7 @@ public class Noeud implements NoeudInterface {
 					+Integer.toString(this.donnees.size()));
 			if(this.donnees != null) {
 				pred.validerAjoutNoeud(this.moi);
-				System.out.println("ajoutChord(): noeud bien ajouté"
+				System.out.println("ajoutChord(): noeud d'idChord="+this.cleDebut+" bien ajouté"
 						+" avec l'intervalle "+this.intervalle()+"");
 			} else {
 				System.err.println("ajoutChord(): noeud non ajouté");
@@ -229,12 +229,15 @@ public class Noeud implements NoeudInterface {
 		if(args.length == 2) {
 			// Cas où c'est le premier oeud inséré
 			noeud.suivant = noeud.precedent = noeud;
-			noeud.cleFin = (idChordDuNoeud-1)%CLE_MAX;
+			noeud.cleFin = ((idChordDuNoeud - 1)%CLE_MAX + CLE_MAX) % CLE_MAX;
+			System.out.println(noeud.cleFin);
 			int cle = noeud.cleDebut;
 			for (int i = 0; i < CLE_MAX; i++) {
 				noeud.donnees.put(cle,cle);
 				cle=(cle+1)%CLE_MAX;
 			}
+			System.out.println("ajoutChord(): premier noeud d'idChord="+noeud.cleDebut+""
+					+ " bien ajouté avec l'intervalle "+noeud.intervalle()+"");
 		} else {
 			// Cas où ce noeud s'insère à d'autres noeuds
 			String pointEntreeRMI = args[2];
