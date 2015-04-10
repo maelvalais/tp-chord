@@ -16,11 +16,12 @@ import java.rmi.registry.Registry;
 public class NoeudClient {
 	public static void main(String[] args) {
 		if(args.length < 2 || args.length > 4) {
-			System.err.println("Usage: chord id_RMI_point_entrée commande_get_ou_put arguments..");
+			System.err.println("Usage: chord id_RMI_entrée get une_clé");
+			System.err.println("Usage: chord id_RMI_entrée put une_clé une_donnée_int");
 			System.err.println("Usage: chord id_RMI_entrée suppr idchord_à_supprimer");
 			return;
 		}
-		
+
 		String pointEntreeRMI = args[0];
 		NoeudInterface pointEntree = null;
 		try {
@@ -40,13 +41,13 @@ public class NoeudClient {
 		switch (args[1]) {
 		case "get":
 			if(args.length != 3) {
-				System.err.println("Usage: chord id_RMI_point_entrée get une_clé");
+				System.err.println("Usage: chord id_RMI_entrée get une_clé");
 				return;
 			}
 			try {
 				cle = Integer.parseInt(args[2]);
 			} catch (NumberFormatException e) {
-				System.err.println("Usage: chord id_RMI_point_entrée get une_clé");
+				System.err.println("Usage: chord id_RMI_entrée get une_clé");
 				return;
 			}
 			System.out.print("get("+cle+"): ");
@@ -66,14 +67,14 @@ public class NoeudClient {
 			
 		case "put":
 			if(args.length != 4) {
-				System.err.println("Usage: chord id_RMI_point_entrée put une_clé une_donnée_int");
+				System.err.println("Usage: chord id_RMI_entrée put une_clé une_donnée_int");
 				return;
 			}
 			try {
 				cle = Integer.parseInt(args[2]);
 				donnee = Integer.parseInt(args[3]);
 			} catch (NumberFormatException e) {
-				System.err.println("Usage: chord id_RMI_point_entrée put une_clé une_donnée_int");
+				System.err.println("Usage: chord id_RMI_entrée put une_clé une_donnée_int");
 				return;
 			}
 			System.out.print("put("+cle+","+donnee+"): ");
