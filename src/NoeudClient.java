@@ -17,6 +17,7 @@ public class NoeudClient {
 	public static void main(String[] args) {
 		if(args.length < 2 || args.length > 4) {
 			System.err.println("Usage: chord id_RMI_point_entrée commande_get_ou_put arguments..");
+			System.err.println("Usage: chord id_RMI_entrée suppr idchord_à_supprimer");
 			return;
 		}
 		
@@ -90,6 +91,31 @@ public class NoeudClient {
 				System.out.print("client: la valeur '"+retour.toString()+"' "
 						+ "a été écrasée par votre nouvelle valeur '"
 						+donnee+"' avec la clé '"+cle+"'\n");
+			}
+			break;
+		case "suppr":
+			if(args.length != 3) {
+				System.err.println("Usage: chord id_RMI_entrée suppr idchord_à_supprimer");
+				return;
+			}
+			try {
+				cle = Integer.parseInt(args[2]);
+			} catch (NumberFormatException e) {
+				System.err.println("Usage: chord id_RMI_entrée suppr idchord_à_supprimer");
+				return;
+			}
+			System.out.print("suppr("+cle+"): ");
+			boolean ret = false;
+			try {
+				ret = pointEntree.supprimerNoeud(cle);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(ret == false) {
+				System.out.print("client: l'idchord "+cle+" n'a pas pu être supprimé'\n");
+			} else {
+				System.out.print("client: l'idchord "+cle+" a été supprimé'\n");
 			}
 			break;
 		default:
