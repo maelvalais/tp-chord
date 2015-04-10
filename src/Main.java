@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class Main {
-	private static Process lancer(int idChord, String idRMI, String idRMIEntree) {
+	private static Process ajouter(int idChord, String idRMI, String idRMIEntree) {
 		String command = "java Noeud "+idChord+" "+idRMI+" "+idRMIEntree;
 		ProcessBuilder pb = new ProcessBuilder(command.split(" "));
 		pb.inheritIO(); // Redirige stdout/stderr vers le processus père
@@ -22,6 +22,20 @@ public class Main {
 			return pb.start();
 		} catch (IOException e) {
 			System.out.println("lancer("+idChord+","+idRMI+","+idRMIEntree+"):"
+					+ "erreur");
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private static Process supprimer(int idChord, String idRMIEntree) {
+		String command = "java NoeudClient "+idRMIEntree+" suppr "+idChord;
+		ProcessBuilder pb = new ProcessBuilder(command.split(" "));
+		pb.inheritIO(); // Redirige stdout/stderr vers le processus père
+		try {
+			return pb.start();
+		} catch (IOException e) {
+			System.out.println("supprimer("+idChord+","+idRMIEntree+"):"
 					+ "erreur");
 			e.printStackTrace();
 		}
@@ -57,7 +71,7 @@ public class Main {
 		try {
 			List<Process> lesprocessus = new Vector<Process>();
 			
-			Process p = Main.lancer(0,"N1","");
+			Process p = Main.ajouter(0,"N1","");
 			lesprocessus.add(p);
 
 			List<String> noeudsNoms = new ArrayList<String>();
@@ -68,7 +82,7 @@ public class Main {
 			
 			for (int i = 0; i < noeudsIdChord.length; i++) {
 				p.waitFor(1, TimeUnit.SECONDS);
-				lesprocessus.add(Main.lancer(noeudsIdChord[i],noeudsNoms.get(i+1),noeudsNoms.get(i)));
+				lesprocessus.add(Main.ajouter(noeudsIdChord[i],noeudsNoms.get(i+1),noeudsNoms.get(i)));
 			}
 			
 			get(1, "N1");
