@@ -11,20 +11,26 @@ import java.util.HashMap;
  * Pour régler l'exception java.lang.ClassNotFoundException: NoeudInterface :
  * vérifier qu'on lance bien `rmiregistry &` depuis le dossier bin
  * 
+ * Un noeud a l'intervalle de clés ]pred.clé, clé]
+ * 
  * @author maelv
  *
  */
 public class Noeud implements NoeudInterface {
-	private int cleDebut; // L'idChord (= cleDebut) du noeud-serveur
-	private int cleFin; // RAPPEL: cleMin = idChord
+	private int cle; // L'idChord (= cleDebut) du noeud-serveur
 	private NoeudInterface moi;
 	private NoeudInterface suivant;
 	private NoeudInterface precedent;
 	private String idRMI; // Juste pour affichage
-	private static int CLE_MAX = 1 << 16; // de 0 à 65536-1
+	private static int NB_CLES = 1 << 16;
+	private static int CLE_MAX = NB_CLES - 1; // de 0 à 65536-1
 	private HashMap<Integer,Integer> donnees = new HashMap<Integer, Integer>(); 
 	// NOTE: donnees[uneCleChord - this.cleMin] 
 
+	private void print(String s) {
+		System.out.println(this.idRMI+" ("+this.cle+"): "+s);
+	}
+	
 	@Override
 	public boolean supprimerNoeud() throws RemoteException {
 		// TODO Auto-generated method stub
@@ -38,14 +44,10 @@ public class Noeud implements NoeudInterface {
 					+this.intervalle()+", je passe au suivant");
 			return this.suivant.get(cle);
 		}
-		print("get(): "+cle+" est dans mon intervalle "+this.intervalle());
+		print("get(): "+cle+" dans mon intervalle "+this.intervalle());
 		return donnees.get(cle);
 	}
 
-	public void print(String s) {
-		System.out.println(this.idRMI+" ("+this.cleDebut+"): "+s);
-	}
-	
 	@Override
 	public Integer put(int cle, int donnee) throws RemoteException {
 		if(!dansIntervalle(cle)) {
@@ -53,39 +55,50 @@ public class Noeud implements NoeudInterface {
 					+this.intervalle()+"), je passe au suivant");
 			return this.suivant.put(cle,donnee);
 		}
-		print("put(): "+cle+" est dans mon intervalle ("+this.intervalle()+")");
+		print("put(): "+cle+" est dans mon intervalle "+this.intervalle());
 		return this.donnees.put(cle, donnee);
 	}
-	
-	private boolean dansIntervalle(int cle) {
-		if(this.cleDebut <= this.cleFin) {
-			return this.cleDebut <= cle && cle <= this.cleFin;
-		} else {
-			return (this.cleDebut <= cle && cle <= Noeud.CLE_MAX)
-				|| (0 <= cle && cle <= this.cleFin);
+
+	/**
+	 * Lorsqu'on dit qu'une clé est dans l'intervalle du noeud,
+	 * c'est que la clé appartient à ]clé-prédécesseur-fin, ma-clé-début]
+	 * @param cle
+	 * @return
+	 * @throws RemoteException 
+	 */
+	private boolean dansIntervalle(int cle) throws RemoteException  {
+		// ]clé-prédécesseur-fin, ma-clé-début]
+		// intervalle de la forme ]4,500]
+		if(this.getCleDebut() <= this.getCleFin()) {
+			return this.getCleDebut() <= cle && cle <= this.getCleFin();
+		} else { // intervalle de la forme [500,4[ == ]4,max] ou [0,500]
+			return (this.getCleDebut() <= cle && cle <= Noeud.CLE_MAX)
+					|| (0 <= cle && cle <= this.getCleFin());
+		}
+	}
+
+	private String intervalle() throws RemoteException {
+		if(this.getCleDebut() <= this.getCleFin()) {
+			return "["+this.getCleDebut()+","+this.getCleFin()+"]";
+		} else { // intervalle de la forme [500,4[ == ]4,max] ou [0,500]
+			return "["+this.getCleDebut()+","+(Noeud.CLE_MAX)+"]"
+					+ "∪[0,"+this.getCleFin()+"]";
 		}
 	}
 	
 	@Override
-	public NoeudInterface chercherPredecesseur(int idChord) 
+	public NoeudInterface chercherSuivant(int cle) 
 			throws RemoteException {
-		print("chercherPred("+Integer.toString(idChord)+"): "
-				+ "mon intervalle est" + this.intervalle());
-
-		// idChord est-il dans mon intervalle ?
-		if(dansIntervalle(idChord)) {
-			// Je donne juste mon idRMI
-			print("chercherPred("+Integer.toString(idChord)+"): "
-					+ "dans mon intervalle ("+this.intervalle()+")");
+		// clé est-elle dans mon intervalle ?
+		if(this.dansIntervalle(cle)) {
+			print("chercherSuivant("+Integer.toString(cle)+"): "
+					+ "dans mon intervalle "+this.intervalle()+"");
 			return this;
-		} else if (this.cleDebut == idChord) {
-			return null;
-		}
-		else {
-			print("chercherPred("+Integer.toString(idChord)+"): "
+		} else {
+			print("chercherSuivant("+Integer.toString(cle)+"): "
 					+ "pas dans mon intervalle"
-					+ " ("+this.intervalle()+") -> suivant");
-			return suivant.chercherPredecesseur(idChord);
+					+ this.intervalle()+" -> suivant");
+			return suivant.chercherSuivant(cle);
 		}
 	}
 
@@ -93,50 +106,40 @@ public class Noeud implements NoeudInterface {
 	public HashMap<Integer,Integer> recupererDonneesIntervalle(int cleDebut, int cleFin)
 			throws RemoteException {
 		if(!dansIntervalle(cleDebut) || !dansIntervalle(cleFin)) {
-			System.err.println("recupererDonneesIntervalle(): en dehors de mon intervalle"
-					+" ("+this.intervalle()+")");
+			System.err.println("recupererDonneesIntervalle("+cleDebut+","+cleFin+"): "
+					+ "en dehors de mon intervalle "+this.intervalle());
 			return null;
 		}
 		HashMap<Integer,Integer> sous_ensemble_table = new HashMap<Integer,Integer>();
-		for (int cle = cleDebut; cle != (cleFin+1)%CLE_MAX; cle=(cle+1)%CLE_MAX) {
+		for (int cle = cleDebut; cle != (cleFin+1)%NB_CLES; cle=(cle+1)%NB_CLES) {
 			sous_ensemble_table.put(cle, this.donnees.get(cle));
 		}
 		return sous_ensemble_table;
 	}
 
 	@Override
+	/**
+	 * C'est le suivant du noeud qui valide tout ça
+	 */
 	public void validerAjoutNoeud(NoeudInterface noeud) throws RemoteException {
 		// On supprime les données dans l'intervalle qui est 
-		// maintenant pris en charge par idChordAjoute.
-		// L'intervalle est [idChordAjoute;this.cleMax]
-		for (int cle = noeud.getIdChord(); cle%CLE_MAX != (this.cleFin+1)%CLE_MAX; cle++) {
+		// maintenant pris en charge par idChordAjoute 
+		// càd sur l'intervalle ]this.pred.cle, this.cle]
+		for (int cle = this.getCleDebut(); cle != (this.getCleFin()+1)%NB_CLES; cle=(cle+1)%NB_CLES) {
 			donnees.remove(cle);
 		}
-		
-		this.cleFin = ((noeud.getCleDebut()-1)%CLE_MAX + CLE_MAX) % CLE_MAX;;
-		
-		suivant.setNoeudPrecedent(noeud);
-		this.setNoeudSuivant(noeud);
-		
-		print("validerAjoutNoeud(): "
-			+"le noeud d'idChord "+noeud.getIdChord()+" a bien été ajouté");
+
+		precedent.setNoeudSuivant(noeud);
+		precedent = noeud;
+
+		print("validerAjoutNoeud(): noeud "+noeud.getIdChord()+" bien ajouté");
 	}
 
 	@Override
 	public int getIdChord() throws RemoteException {
-		return this.cleDebut;
+		return this.cle;
 	}
 
-	@Override
-	public int getCleDebut() throws RemoteException {
-		return this.cleDebut;
-	}
-	
-	@Override
-	public int getCleFin() throws RemoteException {
-		return this.cleFin;
-	}
-	
 	@Override
 	public void setNoeudSuivant(NoeudInterface noeudSuivant) throws RemoteException {
 		this.suivant = noeudSuivant;
@@ -157,12 +160,12 @@ public class Noeud implements NoeudInterface {
 		return this.precedent;
 	}
 
-	
+
 	public Noeud(int idChord, String idRMI) {
 		super();
-		this.cleDebut = idChord;
+		this.cle = idChord;
 	}
-	
+
 	/**
 	 * Méthode réservée au noeud-client
 	 * @param pointEntreeRMI
@@ -172,41 +175,34 @@ public class Noeud implements NoeudInterface {
 			// On récupère le noeud-serveur en question
 			Registry registry = LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
 			NoeudInterface pointEntree = (NoeudInterface) registry.lookup(pointEntreeRMI);
-			NoeudInterface pred = pointEntree.chercherPredecesseur(this.cleDebut);
-			if(pred == null) {
+			NoeudInterface suiv = pointEntree.chercherSuivant(this.cle);
+			if(suiv == null) {
 				System.err.println("ajoutChord(): l'identifiant CHORD (= clé) "
-						+Integer.toString(this.cleDebut)+" est déjà utilisé");
+						+Integer.toString(this.cle)+" est déjà utilisé");
 				return false;
 			}
-			this.precedent = pred;
-			this.suivant = pred.getNoeudSuivant();
-			this.cleFin = pred.getCleFin();
-			this.donnees = pred.recupererDonneesIntervalle(this.cleDebut, this.cleFin);
-			print("ajoutChord(): la table récupérée est de taille "
-					+Integer.toString(this.donnees.size()));
+			this.suivant = suiv;
+			this.precedent = suiv.getNoeudPrecedent();
+			this.donnees = suiv.recupererDonneesIntervalle(suiv.getCleDebut(),this.getCleFin());
 			if(this.donnees != null) {
-				pred.validerAjoutNoeud(this.moi);
-				print("ajoutChord(): noeud "+this.cleDebut+" bien ajouté"
+				print("ajoutChord(): la table récupérée est de taille "+this.donnees.size());
+				suiv.validerAjoutNoeud(this.moi);
+				print("ajoutChord(): noeud "+this.cle+" bien ajouté"
 						+" avec intervalle "+this.intervalle()+"");
 			} else {
 				System.err.println("ajoutChord(): noeud non ajouté");
 			}
-			
+
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NotBoundException e) {
 			System.err.println("ajoutChord(): l'id RMI '"+
-				pointEntreeRMI+"' donné comme point d'entrée n'existe pas");
+					pointEntreeRMI+"' donné comme point d'entrée n'existe pas");
 			return false;
 		}
 		return true;
 	}
-	
-	private String intervalle() {
-		return "["+Integer.toString(this.cleDebut)+","+Integer.toString(this.cleFin)+"]";
-	}
-	
 
 	public static void main(String[] args) {
 		if (args.length != 3 && args.length != 2) {
@@ -215,42 +211,46 @@ public class Noeud implements NoeudInterface {
 		}
 		int idChordDuNoeud = Integer.parseInt(args[0]);
 		String idRMIDuNoeud = args[1];
-		
+
 		Noeud noeud = new Noeud(idChordDuNoeud,idRMIDuNoeud);
 		try {
 			int port = (int)(Math.random()*10000)%(2<<16 - 4000) + 4000;
 			NoeudInterface stub = (NoeudInterface) UnicastRemoteObject.exportObject(noeud, port); // XXX Il faudrait fixer ça !
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(idRMIDuNoeud, stub);
-			noeud.moi = stub;
 			System.out.println("Le noeud d'identifiant RMI '"+idRMIDuNoeud+"'"
 					+" a été ajouté au rmiregistry");
+			noeud.moi = stub;
+			noeud.cle = idChordDuNoeud;
+			noeud.idRMI = idRMIDuNoeud;
+
+			if(args.length == 2) { // Cas où c'est le premier noeud inséré
+				noeud.suivant = noeud.precedent = noeud;
+				for (int i = 0, cle = noeud.cle; i < NB_CLES; i++,cle=(cle+1)%NB_CLES) {
+					noeud.donnees.put(cle,cle);
+				}
+				System.out.println("ajoutChord(): premier noeud "+noeud.cle 
+						+" ajouté. Intervalle: "+noeud.intervalle()+"");
+			} else { // Cas où ce noeud s'insère à d'autres noeuds
+				String pointEntreeRMI = args[2];
+				if(!noeud.ajoutChord(pointEntreeRMI)) {
+					// Si on a pas réussi à insérer le noeud dans l'anneau
+					return;
+				}
+			}
 		} catch (RemoteException e) {
 			System.err.println("Erreur lors du lien avec rmiregistry pour le remote object Noeud");
 			e.printStackTrace();
 		}
+	}
 
-		noeud.cleDebut = idChordDuNoeud;
-		noeud.idRMI = idRMIDuNoeud;
+	@Override
+	public int getCleDebut() throws RemoteException {
+		return (this.precedent.getIdChord()+1)%NB_CLES;
+	}
 
-		if(args.length == 2) {
-			// Cas où c'est le premier oeud inséré
-			noeud.suivant = noeud.precedent = noeud;
-			noeud.cleFin = ((idChordDuNoeud - 1)%CLE_MAX + CLE_MAX) % CLE_MAX;
-			int cle = noeud.cleDebut;
-			for (int i = 0; i < CLE_MAX; i++) {
-				noeud.donnees.put(cle,cle);
-				cle=(cle+1)%CLE_MAX;
-			}
-			System.out.println("ajoutChord(): premier noeud d'"+noeud.cleDebut+""
-					+ " ajouté. Intervalle: "+noeud.intervalle()+"");
-		} else {
-			// Cas où ce noeud s'insère à d'autres noeuds
-			String pointEntreeRMI = args[2];
-			if(!noeud.ajoutChord(pointEntreeRMI)) {
-				// Si on a pas réussi à insérer le noeud dans l'anneau
-				return;
-			}
-		}
+	@Override
+	public int getCleFin() throws RemoteException {
+		return this.cle;
 	}
 }

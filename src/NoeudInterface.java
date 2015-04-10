@@ -70,17 +70,17 @@ public interface NoeudInterface extends Remote {
 	 * Cette méthode, utilisée par un noeud-client A, est exécutée par un premier
 	 * noeud-serveur B que A connait. B vérifie si l'idChord de A appartient à son
 	 * propre intervalle de clés (intervalle de clés == intervalle d'idChord). 
-	 * - si idChord(A) est dans son intervalle, B renvoit son propre numéro idRMI.	 
+	 * - si idChord(A) est dans son intervalle, B renvoit son propre "stub" NoeudInterface.	 
 	 * - sinon, B demande à suiv(B) en appelant cette même méthode
-	 * @param cle idChord du nouveau noeud à placer
+	 * @param cle du nouveau noeud à placer
 	 * @return le noeud-serveur qui correspond au prédécesseur de idChordAppelant,
 	 * ou null si idChordAppelant est déjà utilisé
 	 * @throws RemoteException
 	 */
-	NoeudInterface chercherPredecesseur(int cle) throws RemoteException;
+	NoeudInterface chercherSuivant(int cle) throws RemoteException;
 		
 	/**
-	 * Récupère les données de l'intervalle [cleDebut, this.cleMax].
+	 * Récupère les données de l'intervalle [cleDebut, cleFin].
 	 * @param cleDebut
 	 * @param cleFin
 	 * @return
@@ -92,6 +92,7 @@ public interface NoeudInterface extends Remote {
 	 * valider l'insertion de A dans l'anneau en modifiant son propre intervalle
 	 * de clés (qui va diminuer à cause de A, donc) et va supprimer les données en
 	 * trop qu'il a déjà donné à A.
+	 * @note c'est le suivant de leNoeudAjoute qui s'occupe de tout ça
 	 * @throws RemoteException
 	 */
 	void validerAjoutNoeud(NoeudInterface leNoeudAjoute) throws RemoteException;
