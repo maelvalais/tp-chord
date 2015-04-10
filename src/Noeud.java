@@ -183,7 +183,7 @@ public class Noeud implements NoeudInterface {
 			}
 			this.suivant = suiv;
 			this.precedent = suiv.getNoeudPrecedent();
-			this.donnees = suiv.recupererDonneesIntervalle(suiv.getCleDebut(),this.getCleFin());
+			this.donnees = suiv.recupererDonneesIntervalle(this.getCleDebut(),this.getCleFin());
 			if(this.donnees != null) {
 				print("ajoutChord(): la table récupérée est de taille "+this.donnees.size());
 				suiv.validerAjoutNoeud(this.moi);
