@@ -40,8 +40,8 @@ public class Noeud implements NoeudInterface {
 	@Override
 	public Integer get(int cle) throws RemoteException {
 		if(!dansIntervalle(cle)) {
-			print("get(): "+cle+" n'est pas dans mon intervalle "
-					+this.intervalle()+", je passe au suivant");
+			print("get(): "+cle+" pas dans mon intervalle "
+					+this.intervalle()+" -> suivant");
 			return this.suivant.get(cle);
 		}
 		print("get(): "+cle+" dans mon intervalle "+this.intervalle());
@@ -194,7 +194,7 @@ public class Noeud implements NoeudInterface {
 			}
 
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
+			System.err.println("ajoutChord(): erreur");
 			e.printStackTrace();
 		} catch (NotBoundException e) {
 			System.err.println("ajoutChord(): l'id RMI '"+
