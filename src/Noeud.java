@@ -32,9 +32,24 @@ public class Noeud implements NoeudInterface {
 	}
 	
 	@Override
-	public boolean supprimerNoeud() throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean supprimerNoeud(int cle) throws RemoteException {
+		if(!dansIntervalle(cle) || cle == this.getIdChord()) {
+			print("supprimerNoeud("+cle+"): pas dans mon intervalle "
+					+this.intervalle()+" -> suivant");
+			return this.suivant.supprimerNoeud(cle);
+		} else { // Ce noeud s'occupe de la suppression du noeud précédent "cle" 
+			print("supprimerNoeud("+cle+"): dans mon intervalle "+this.intervalle());
+			HashMap<Integer,Integer> sous_ensemble_table = new HashMap<Integer,Integer>();
+			sous_ensemble_table =  
+					this.precedent.recupererDonneesIntervalle(this.precedent.getCleDebut(), 
+							this.precedent.getCleFin());
+			this.donnees.putAll(sous_ensemble_table);
+			
+			this.precedent.getNoeudPrecedent().setNoeudSuivant(moi);
+			this.precedent = this.precedent.getNoeudPrecedent();
+			
+			return true;
+		}
 	}
 
 	@Override
