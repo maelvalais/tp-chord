@@ -33,7 +33,10 @@ public class Noeud implements NoeudInterface {
 	
 	@Override
 	public boolean supprimerNoeud(int cle) throws RemoteException {
-		if(!dansIntervalle(cle) || cle == this.getIdChord()) {
+		// Si (c'est pas dans mon intervalle OU que clé = ma clé)
+		// ET que mon précédent != clé
+		if((!dansIntervalle(cle) || cle == this.getIdChord())
+			&& cle!=this.precedent.getIdChord()) {
 			print("supprimerNoeud("+cle+"): pas dans mon intervalle "
 					+this.intervalle()+" -> suivant");
 			return this.suivant.supprimerNoeud(cle);
