@@ -188,7 +188,7 @@ public class Noeud implements NoeudInterface {
 	 * Méthode réservée au noeud-client
 	 * @param pointEntreeRMI
 	 */
-	public boolean ajoutChord(String pointEntreeRMI) {
+	private boolean ajoutChord(String pointEntreeRMI) {
 		try {
 			// On récupère le noeud-serveur en question
 			Registry registry = LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
