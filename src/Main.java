@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 
 public class Main {
@@ -11,7 +12,6 @@ public class Main {
 			List<Process> processus = new Vector<Process>();
 			List<BufferedReader> stdout = new Vector<BufferedReader>(); 
 
-			Runtime runtime = Runtime.getRuntime();
 			String command;
 			Process p;
 			ProcessBuilder pb; 
@@ -22,6 +22,7 @@ public class Main {
 			stdout.add(new BufferedReader(new InputStreamReader(p.getInputStream())));
 
 			for (int i = 2; i < 5; i++) {
+				p.waitFor(1, TimeUnit.SECONDS);
 				command = "java Noeud "+i*100+" N"+i +" N1";
 				pb = new ProcessBuilder(command.split(" "));
 				pb.inheritIO(); // Redirige stdout/stderr vers le processus père
