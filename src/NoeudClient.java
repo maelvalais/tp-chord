@@ -5,9 +5,11 @@ import java.rmi.registry.Registry;
 
 
 /**
+ * Usage: `java NoeudClient N1 get 5`
+ * Usage: `java NoeudClient N1 put 5 1234`
  * Cette classe est un "faux Noeud" qui ne s'insère pas dans l'anneau
- * mais envoie des commandes put/get dans l'anneau à travers un identifiant
- * RMI.
+ * mais envoie des commandes put/get dans l'anneau par l'intermédiaire
+ * d'un noeud dont on connait l'identifiant RMI.
  * @author maelv
  *
  */
@@ -51,13 +53,12 @@ public class NoeudClient {
 			try {
 				resultat = pointEntree.get(cle);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			if(resultat != null) {
-				System.out.println("la clé '"+cle+"' est associée à la donnée '"+resultat+"'");
+				System.out.println("client: la clé '"+cle+"' est associée à la donnée '"+resultat+"'");
 			} else {
-				System.out.println("la clé '"+cle+"' n'est associée à aucune donnée");
+				System.out.println("client: la clé '"+cle+"' n'est associée à aucune donnée");
 			}
 			break;
 
@@ -83,10 +84,10 @@ public class NoeudClient {
 				e.printStackTrace();
 			}
 			if(null == retour) {
-				System.out.print("la valeur '"+donnee+"' a bien "
-						+ "été insérée avec la clé '"+cle+"'\n");
+				System.out.print("client: la valeur '"+donnee+"' a bien "
+						+ "été insérée à la clé '"+cle+"'\n");
 			} else {
-				System.out.print("la valeur '"+retour.toString()+"' "
+				System.out.print("client: la valeur '"+retour.toString()+"' "
 						+ "a été écrasée par votre nouvelle valeur '"
 						+donnee+"' avec la clé '"+cle+"'\n");
 			}
