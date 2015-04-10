@@ -20,6 +20,7 @@ public class Noeud implements NoeudInterface {
 	private NoeudInterface moi;
 	private NoeudInterface suivant;
 	private NoeudInterface precedent;
+	private String idRMI; // Juste pour affichage
 	private static int CLE_MAX = 1 << 16; // de 0 à 65536-1
 	private HashMap<Integer,Integer> donnees = new HashMap<Integer, Integer>(); 
 	// NOTE: donnees[uneCleChord - this.cleMin] 
@@ -33,22 +34,26 @@ public class Noeud implements NoeudInterface {
 	@Override
 	public Integer get(int cle) throws RemoteException {
 		if(!dansIntervalle(cle)) {
-			System.out.println("get(): "+cle+" n'est pas dans mon intervalle "
+			print("get(): "+cle+" n'est pas dans mon intervalle "
 					+this.intervalle()+", je passe au suivant");
 			return this.suivant.get(cle);
 		}
-		System.out.println("get(): "+cle+" est dans mon intervalle "+this.intervalle());
+		print("get(): "+cle+" est dans mon intervalle "+this.intervalle());
 		return donnees.get(cle);
 	}
 
+	public void print(String s) {
+		System.out.println(this.idRMI+" ("+this.cleDebut+"): "+s);
+	}
+	
 	@Override
 	public Integer put(int cle, int donnee) throws RemoteException {
 		if(!dansIntervalle(cle)) {
-			System.out.println("put(): "+cle+" n'est pas dans mon intervalle ("
+			print("put(): "+cle+" n'est pas dans mon intervalle ("
 					+this.intervalle()+"), je passe au suivant");
 			return this.suivant.put(cle,donnee);
 		}
-		System.out.println("put(): "+cle+" est dans mon intervalle ("+this.intervalle()+")");
+		print("put(): "+cle+" est dans mon intervalle ("+this.intervalle()+")");
 		return this.donnees.put(cle, donnee);
 	}
 	
@@ -64,22 +69,22 @@ public class Noeud implements NoeudInterface {
 	@Override
 	public NoeudInterface chercherPredecesseur(int idChord) 
 			throws RemoteException {
-		System.out.println("chercherPred(idChord="+Integer.toString(idChord)+"): "
+		print("chercherPred("+Integer.toString(idChord)+"): "
 				+ "mon intervalle est" + this.intervalle());
 
 		// idChord est-il dans mon intervalle ?
 		if(dansIntervalle(idChord)) {
 			// Je donne juste mon idRMI
-			System.out.println("chercherPred(idChord="+Integer.toString(idChord)+"): "
-					+ "cet idChord est dans mon intervalle ("+this.intervalle()+")");
+			print("chercherPred("+Integer.toString(idChord)+"): "
+					+ "dans mon intervalle ("+this.intervalle()+")");
 			return this;
 		} else if (this.cleDebut == idChord) {
 			return null;
 		}
 		else {
-			System.out.println("chercherPred(idChord="+Integer.toString(idChord)+"): "
-					+ "cet idChord n'est pas dans mon intervalle"
-					+ " ("+this.intervalle()+"). Je demande à mon suivant.");
+			print("chercherPred("+Integer.toString(idChord)+"): "
+					+ "pas dans mon intervalle"
+					+ " ("+this.intervalle()+") -> suivant");
 			return suivant.chercherPredecesseur(idChord);
 		}
 	}
@@ -113,7 +118,7 @@ public class Noeud implements NoeudInterface {
 		suivant.setNoeudPrecedent(noeud);
 		this.setNoeudSuivant(noeud);
 		
-		System.out.println("validerAjoutNoeud(): "
+		print("validerAjoutNoeud(): "
 			+"le noeud d'idChord "+noeud.getIdChord()+" a bien été ajouté");
 	}
 
@@ -177,12 +182,12 @@ public class Noeud implements NoeudInterface {
 			this.suivant = pred.getNoeudSuivant();
 			this.cleFin = pred.getCleFin();
 			this.donnees = pred.recupererDonneesIntervalle(this.cleDebut, this.cleFin);
-			System.out.println("ajoutChord(): la table récupérée est de taille "
+			print("ajoutChord(): la table récupérée est de taille "
 					+Integer.toString(this.donnees.size()));
 			if(this.donnees != null) {
 				pred.validerAjoutNoeud(this.moi);
-				System.out.println("ajoutChord(): noeud d'idChord="+this.cleDebut+" bien ajouté"
-						+" avec l'intervalle "+this.intervalle()+"");
+				print("ajoutChord(): noeud "+this.cleDebut+" bien ajouté"
+						+" avec intervalle "+this.intervalle()+"");
 			} else {
 				System.err.println("ajoutChord(): noeud non ajouté");
 			}
@@ -226,18 +231,19 @@ public class Noeud implements NoeudInterface {
 		}
 
 		noeud.cleDebut = idChordDuNoeud;
+		noeud.idRMI = idRMIDuNoeud;
+
 		if(args.length == 2) {
 			// Cas où c'est le premier oeud inséré
 			noeud.suivant = noeud.precedent = noeud;
 			noeud.cleFin = ((idChordDuNoeud - 1)%CLE_MAX + CLE_MAX) % CLE_MAX;
-			System.out.println(noeud.cleFin);
 			int cle = noeud.cleDebut;
 			for (int i = 0; i < CLE_MAX; i++) {
 				noeud.donnees.put(cle,cle);
 				cle=(cle+1)%CLE_MAX;
 			}
-			System.out.println("ajoutChord(): premier noeud d'idChord="+noeud.cleDebut+""
-					+ " bien ajouté avec l'intervalle "+noeud.intervalle()+"");
+			System.out.println("ajoutChord(): premier noeud d'"+noeud.cleDebut+""
+					+ " ajouté. Intervalle: "+noeud.intervalle()+"");
 		} else {
 			// Cas où ce noeud s'insère à d'autres noeuds
 			String pointEntreeRMI = args[2];
