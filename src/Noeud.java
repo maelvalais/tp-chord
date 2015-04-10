@@ -69,6 +69,9 @@ public class Noeud implements NoeudInterface {
 	private boolean dansIntervalle(int cle) throws RemoteException  {
 		// ]clé-prédécesseur-fin, ma-clé-début]
 		// intervalle de la forme ]4,500]
+		if (cle<0 || cle > CLE_MAX) {
+			throw new RemoteException("ATTENTION: clé "+cle+" pas dans [0,"+CLE_MAX+"]");
+		}
 		if(this.getCleDebut() <= this.getCleFin()) {
 			return this.getCleDebut() <= cle && cle <= this.getCleFin();
 		} else { // intervalle de la forme [500,4[ == ]4,max] ou [0,500]
