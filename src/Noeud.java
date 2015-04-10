@@ -40,7 +40,7 @@ public class Noeud implements NoeudInterface {
 			print("supprimerNoeud("+cle+"): pas dans mon intervalle "
 					+this.intervalle()+" -> suivant");
 			return this.suivant.supprimerNoeud(cle);
-		} else { // Ce noeud s'occupe de la suppression du noeud précédent "cle" 
+		} else if(this.precedent.getIdChord()==cle){ // Ce noeud s'occupe de la suppression du noeud précédent "cle" 
 			print("supprimerNoeud("+cle+"): dans mon intervalle "+this.intervalle());
 			HashMap<Integer,Integer> sous_ensemble_table = new HashMap<Integer,Integer>();
 			sous_ensemble_table =  
@@ -52,6 +52,9 @@ public class Noeud implements NoeudInterface {
 			this.precedent = this.precedent.getNoeudPrecedent();
 			
 			return true;
+		} else {
+			print("supprimerNoeud("+cle+"): ce noeud n'existe pas");
+			return false;
 		}
 	}
 
