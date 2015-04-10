@@ -33,7 +33,7 @@ public interface NoeudInterface extends Remote {
 	 * @return
 	 * @throws RemoteException
 	 */
-	boolean supprimerNoeud() throws RemoteException;
+	boolean supprimerNoeud(int idChord) throws RemoteException;
 	
 	/**
 	 * On veut récupérer la "donnée" à partir de son "hash" (identifiant) dans
