@@ -153,8 +153,8 @@ public class Noeud implements NoeudInterface {
 	public void validerAjoutNoeud(NoeudInterface noeud) throws RemoteException {
 		// On supprime les données dans l'intervalle qui est 
 		// maintenant pris en charge par idChordAjoute 
-		// càd sur l'intervalle ]this.pred.cle, this.cle]
-		for (int cle = this.getCleDebut(); cle != (this.getCleFin()+1)%NB_CLES; cle=(cle+1)%NB_CLES) {
+		// càd sur l'intervalle ]this.pred.cle, noeud.cle]
+		for (int cle = this.getCleDebut(); cle != (noeud.getCleFin()+1)%NB_CLES; cle=(cle+1)%NB_CLES) {
 			donnees.remove(cle);
 		}
 		print("validerAjoutNoeud(): Clés de "+this.getCleDebut()+" à "+noeud.getCleFin()+" retirées");
