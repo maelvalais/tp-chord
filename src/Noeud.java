@@ -89,13 +89,13 @@ public class Noeud implements NoeudInterface {
 	 */
 	private boolean dansIntervalle(int cle) throws RemoteException  {
 		// ]clé-prédécesseur-fin, ma-clé-début]
-		// intervalle de la forme ]4,500]
 		if (cle<0 || cle > CLE_MAX) {
 			throw new RemoteException("ATTENTION: clé "+cle+" pas dans [0,"+CLE_MAX+"]");
 		}
+		// intervalle de la forme ]4,500]
 		if(this.getCleDebut() <= this.getCleFin()) {
 			return this.getCleDebut() <= cle && cle <= this.getCleFin();
-		} else { // intervalle de la forme [500,4[ == ]4,max] ou [0,500]
+		} else { // intervalle de la forme [500,4[ == ]4,max] union [0,500]
 			return (this.getCleDebut() <= cle && cle <= Noeud.CLE_MAX)
 					|| (0 <= cle && cle <= this.getCleFin());
 		}
@@ -152,10 +152,9 @@ public class Noeud implements NoeudInterface {
 		for (int cle = this.getCleDebut(); cle != (this.getCleFin()+1)%NB_CLES; cle=(cle+1)%NB_CLES) {
 			donnees.remove(cle);
 		}
-
+		print("validerAjoutNoeud(): Clés de "+this.getCleDebut()+" à "+noeud.getCleFin()+" retirées");
 		precedent.setNoeudSuivant(noeud);
 		precedent = noeud;
-
 		print("validerAjoutNoeud(): noeud "+noeud.getIdChord()+" bien ajouté");
 	}
 
