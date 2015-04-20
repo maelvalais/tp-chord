@@ -66,6 +66,11 @@ public class Noeud implements NoeudInterface {
 			return this.suivant.get(cle);
 		}
 		print("get(): "+cle+" dans mon intervalle "+this.intervalle());
+		Integer res = donnees.get(cle);
+		if(res == null) {
+			print("get(): pourtant, "+cle+" n'est pas dans ma hashtable!");
+			print("get(): ma table est " + donnees.toString());
+		}
 		return donnees.get(cle);
 	}
 
