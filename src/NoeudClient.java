@@ -114,9 +114,9 @@ public class NoeudClient {
 				e.printStackTrace();
 			}
 			if(ret == false) {
-				System.out.print("client: l'idchord "+cle+" n'a pas pu être supprimé'\n");
+				System.out.print("client: l'idchord "+cle+" n'a pas pu être supprimé\n");
 			} else {
-				System.out.print("client: l'idchord "+cle+" a été supprimé'\n");
+				System.out.print("client: l'idchord "+cle+" a été supprimé\n");
 			}
 			break;
 		default:
