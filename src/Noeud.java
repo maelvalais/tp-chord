@@ -242,7 +242,7 @@ public class Noeud implements NoeudInterface {
 
 		Noeud noeud = new Noeud(idChordDuNoeud,idRMIDuNoeud);
 		try {
-			int port = (int)(Math.random()*10000)%(2<<16 - 4000) + 4000;
+			int port = (int)(Math.random()*10000)%(2<<16 - 4000) + 4000; // Port dans [61535,65535]
 			NoeudInterface stub = (NoeudInterface) UnicastRemoteObject.exportObject(noeud, port); // XXX Il faudrait fixer ça !
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind(idRMIDuNoeud, stub);
