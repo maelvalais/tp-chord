@@ -201,14 +201,13 @@ public class Noeud implements NoeudInterface {
 		return this.precedent;
 	}
 
-
 	public Noeud(int idChord, String idRMI) {
 		super();
 		this.cle = idChord;
 		this.idRMI = idRMI;
 	}
 	private void ajouterAuRMIRegistry() throws RemoteException {
-		int port = (int)(Math.random()*(1<<16))%(1<<16 - 4000) + 4000; // Port dans [61535,65535]
+		int port = (int)(Math.random()*(1<<16))%(1<<16 - 5000) + 4000; // Port dans [61535,65535]
 		NoeudInterface stub = (NoeudInterface) UnicastRemoteObject.exportObject(this, port);
 		Registry registry = LocateRegistry.getRegistry();
 		registry.rebind(this.idRMI, stub);
@@ -235,7 +234,7 @@ public class Noeud implements NoeudInterface {
 		try {
 			if(pointEntreeRMI == null) {
 				this.suivant = this.precedent = this.moi;
-				this.construireMaFingerTable();
+				this.build_finger_table();
 			} else {
 				// On récupère le noeud-serveur en question
 				Registry registry = LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
@@ -257,7 +256,7 @@ public class Noeud implements NoeudInterface {
 				} else {
 					System.err.println("ajoutChord(): noeud non ajouté");
 				}
-				this.construireMaFingerTable();
+				this.build_finger_table();
 				this.update_others();
 			}
 		} catch (RemoteException e) {
@@ -300,7 +299,7 @@ public class Noeud implements NoeudInterface {
 	 * @return
 	 */
 	private static boolean finger_in_interval(int val, int debut, int fin) {
-		if(debut <= fin)
+		if(debut < fin)
 			return debut <= val && val <= fin;
 		else
 			return (debut <= val && val <= CLE_MAX) 
@@ -312,7 +311,7 @@ public class Noeud implements NoeudInterface {
 			finger.add(null);
 		}
 	}
-	private void construireMaFingerTable() throws RemoteException {
+	private void build_finger_table() throws RemoteException {
 		init_finger_table();
 		// Si c'est le seul noeud
 		if(this.moi == this.suivant && this.moi == this.precedent) {
@@ -330,18 +329,22 @@ public class Noeud implements NoeudInterface {
 				}
 			}
 		}
-		print("construireMaFingerTable(): "+this.fingerTable());
+		print("build_finger_table(): "+this.fingerTable());
 	}
 	
 	@Override
 	public NoeudInterface closest_preceding_finder(int cle) throws RemoteException {
 		for (int i = TAILLE_FINGER_TABLE; i >= 1; i--) {
-			print("closest_preceding_finder(): "+i);
 			// si ième noeud de la table dans ]ma_clé, clé[ 
 			if(finger_in_interval(finger_node(i).getIdChord(), this.cle, cle)
 					&& finger_node(i).getIdChord() != this.cle
 					&& finger_node(i).getIdChord() != cle) {
+				print("closest_preceding_finder(): "+finger_node(i).getIdChord()
+						+ " est dans "+intervalle(this.cle, cle)+"");
 				return finger_node(i);
+			} else {
+				print("closest_preceding_finder(): "+finger_node(i).getIdChord()
+						+ " PAS dans "+intervalle(this.cle, cle)+"");
 			}
 		}
 		return this.moi;
@@ -352,7 +355,7 @@ public class Noeud implements NoeudInterface {
 		return find_predecessor(cle).getNoeudSuivant();
 	}
 	private static String intervalle(int d, int f) {
-		if(d <= f) {
+		if(d < f) {
 			return "["+d+","+f+"]";
 		} else { // intervalle de la forme [500,4[ == ]4,max] ou [0,500]
 			return "["+d+","+(Noeud.CLE_MAX)+"]"
@@ -360,9 +363,9 @@ public class Noeud implements NoeudInterface {
 		}
 	}
 	private NoeudInterface find_predecessor(int cle) throws RemoteException {
-		print("find_predecessor("+cle+"):");
 		NoeudInterface n = this.moi;
 		// tant que clé pas dans ]n.cle,n.suiv.cle]
+		print("find_predecessor("+cle+"): ma finger table est \n"+fingerTable());
 		while(!(finger_in_interval(cle, n.getIdChord(), n.getNoeudSuivant().getIdChord()))) {
 			print("find_predecessor("+cle+"): "+cle+" pas dans "
 				+intervalle(n.getIdChord(), n.getNoeudSuivant().getIdChord()));
@@ -376,13 +379,13 @@ public class Noeud implements NoeudInterface {
 	public void update_finger_table(NoeudInterface s, int i) throws RemoteException {
 		if(finger_in_interval(s.getIdChord(), this.cle, finger_node(i).getIdChord())
 				&& s.getIdChord() != finger_node(i).getIdChord()) {
-			print("update_finger_table(): "
+			print("update_finger_table("+i+"): "
 					+"("+finger_start(i)+","+finger_node(i).getIdChord()+") changé en "
 					+"("+finger_start(i)+","+s.getIdChord()+")");
 			set_finger_node(i, s);
 			this.precedent.update_finger_table(s, i);
 		} else {
-			print("update_finger_table(): "
+			print("update_finger_table("+i+"): "
 					+"("+finger_start(i)+","+finger_node(i).getIdChord()+") pas changé en "
 					+"("+finger_start(i)+","+s.getIdChord()+")");
 			set_finger_node(i, s);
@@ -391,7 +394,7 @@ public class Noeud implements NoeudInterface {
 	private void update_others() throws RemoteException {
 		for (int i = 1; i <= TAILLE_FINGER_TABLE; i++) {
 			NoeudInterface pred = this.find_predecessor(modulo(this.cle-(1<<(i-1))));
-			print("update_others(): update de "+pred.getIdChord());
+			print("update_others(): "+pred.getIdChord()+" a été updaté");
 			pred.update_finger_table(this.moi,i);
 		}
 	}
