@@ -37,6 +37,8 @@ public class NoeudClient {
 		}
 
 		int donnee, cle;
+		Integer resultat;
+		Integer retour;
 
 		switch (args[1]) {
 		case "get":
@@ -50,10 +52,35 @@ public class NoeudClient {
 				System.err.println("Usage: chord id_RMI_entrée get une_clé");
 				return;
 			}
+			resultat = null;
 			System.out.print("get("+cle+"): ");
-			Integer resultat = null;
 			try {
-				resultat = pointEntree.get(cle);
+				resultat = pointEntree.getSimple(cle);
+			} catch (RemoteException e) {
+				System.out.println(e.getMessage());
+			}
+			if(resultat != null) {
+				System.out.println("client: la clé '"+cle+"' est associée à la donnée '"+resultat+"'");
+			} else {
+				System.out.println("client: la clé '"+cle+"' n'est associée à aucune donnée");
+			}
+			break;
+			
+		case "getft":
+			if(args.length != 3) {
+				System.err.println("Usage: chord id_RMI_entrée getft une_clé");
+				return;
+			}
+			try {
+				cle = Integer.parseInt(args[2]);
+			} catch (NumberFormatException e) {
+				System.err.println("Usage: chord id_RMI_entrée getft une_clé");
+				return;
+			}
+			System.out.print("get("+cle+"): ");
+			resultat = null;
+			try {
+				resultat = pointEntree.getAvecFingerTable(cle);
 			} catch (RemoteException e) {
 				System.out.println(e.getMessage());
 			}
@@ -64,7 +91,6 @@ public class NoeudClient {
 			}
 			break;
 
-			
 		case "put":
 			if(args.length != 4) {
 				System.err.println("Usage: chord id_RMI_entrée put une_clé une_donnée_int");
@@ -78,9 +104,9 @@ public class NoeudClient {
 				return;
 			}
 			System.out.print("put("+cle+","+donnee+"): ");
-			Integer retour = null;
+			retour = null;
 			try {
-				retour = pointEntree.put(cle,donnee);
+				retour = pointEntree.putSimple(cle,donnee);
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -94,6 +120,39 @@ public class NoeudClient {
 						+donnee+"' avec la clé '"+cle+"'\n");
 			}
 			break;
+			
+			
+		case "putft":
+			if(args.length != 4) {
+				System.err.println("Usage: chord id_RMI_entrée putft une_clé une_donnée_int");
+				return;
+			}
+			try {
+				cle = Integer.parseInt(args[2]);
+				donnee = Integer.parseInt(args[3]);
+			} catch (NumberFormatException e) {
+				System.err.println("Usage: chord id_RMI_entrée putft une_clé une_donnée_int");
+				return;
+			}
+			System.out.print("put("+cle+","+donnee+"): ");
+			retour = null;
+			try {
+				retour = pointEntree.putAvecFingerTable(cle,donnee);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(null == retour) {
+				System.out.print("client: la valeur '"+donnee+"' a bien "
+						+ "été insérée à la clé '"+cle+"'\n");
+			} else {
+				System.out.print("client: la valeur '"+retour.toString()+"' "
+						+ "a été écrasée par votre nouvelle valeur '"
+						+donnee+"' avec la clé '"+cle+"'\n");
+			}
+			break;	
+			
+			
 		case "suppr":
 			if(args.length != 3) {
 				System.err.println("Usage: chord id_RMI_entrée suppr idchord_à_supprimer");

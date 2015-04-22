@@ -48,7 +48,7 @@ public interface NoeudInterface extends Remote {
 	 * @return -1 si erreur, un idChord sinon
 	 * @throws RemoteException
 	 */
-	Integer get(int cle) throws RemoteException;
+	Integer getSimple(int cle) throws RemoteException;
 	
 	/**
 	 * On veut modifier la "donnée" à partir de son "hash" (identifiant)
@@ -58,7 +58,7 @@ public interface NoeudInterface extends Remote {
 	 * @return null si la clé n'existait pas déjà, un Integer sinon
 	 * @throws RemoteException
 	 */
-	Integer put(int cle, int donnee) throws RemoteException;
+	Integer putSimple(int cle, int donnee) throws RemoteException;
 
 	/*
 	 * Toutes les fonctions suivantes sont à utiliser dans le contexte "pair à pair"
@@ -77,7 +77,7 @@ public interface NoeudInterface extends Remote {
 	 * ou null si idChordAppelant est déjà utilisé
 	 * @throws RemoteException
 	 */
-	NoeudInterface chercherSuivant(int cle) throws RemoteException;
+	NoeudInterface chercherSuivantSimple(int cle) throws RemoteException;
 		
 	/**
 	 * Récupère les données de l'intervalle [cleDebut, cleFin].
@@ -105,8 +105,12 @@ public interface NoeudInterface extends Remote {
 	NoeudInterface getNoeudSuivant() throws RemoteException;
 	NoeudInterface getNoeudPrecedent() throws RemoteException;
 	
-	void update_finger_table(NoeudInterface s, int i) throws RemoteException;
-	NoeudInterface closest_preceding_finder(int cle) throws RemoteException;
-	NoeudInterface find_successor(int cle) throws RemoteException;
+
+	NoeudInterface chercherSuivantAvecFingerTable(int cle) throws RemoteException;
+	void demanderTousLesNoeudsMajFingerTable(NoeudInterface depart) throws RemoteException;
+
+	Integer getAvecFingerTable(int cle) throws RemoteException;
+
+	Integer putAvecFingerTable(int cle, int donnee) throws RemoteException;
 	
 }
