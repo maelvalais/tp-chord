@@ -105,4 +105,8 @@ public interface NoeudInterface extends Remote {
 	NoeudInterface getNoeudSuivant() throws RemoteException;
 	NoeudInterface getNoeudPrecedent() throws RemoteException;
 	
+	void update_finger_table(NoeudInterface s, int i) throws RemoteException;
+	NoeudInterface closest_preceding_finder(int cle) throws RemoteException;
+	NoeudInterface find_successor(int cle) throws RemoteException;
+	
 }
